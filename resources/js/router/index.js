@@ -21,7 +21,7 @@ const routes = [
     {
          path: '/courses',
          component: CourseDetailPage,
-         meta: { requiresAuth: true }
+         meta: { guest: true }
     },
     // {
     //     path: '/profile',
