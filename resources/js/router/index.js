@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AuthPage from '../pages/AuthPage.vue';
 import HomePage from '../pages/HomePage.vue';
-//import CourseDetailPage from '../pages/CourseDetailPage.vue';
+import CourseDetailPage from '../pages/CourseDetail.vue';
 //import ProfilePage from '../pages/ProfilePage.vue';
 //import FavoritesPage from '../pages/FavoritesPage.vue';
 //import SearchPage from '../pages/SearchPage.vue';
@@ -17,12 +17,12 @@ const routes = [
         path: '/auth',
         component: AuthPage,
         meta: { guest: true }
-    }
-    // {
-    //     path: '/courses/:id',
-    //     component: CourseDetailPage,
-    //     meta: { requiresAuth: true }
-    // },
+    },
+    {
+         path: '/courses',
+         component: CourseDetailPage,
+         meta: { requiresAuth: true }
+    },
     // {
     //     path: '/profile',
     //     component: ProfilePage,
