@@ -21,7 +21,7 @@
     <section class="categories-section">
       <div class="section-header">
         <h2>Популярные категории</h2>
-        <router-link to="/search" class="view-all">Смотреть все</router-link>
+        <span class="view-all">Смотреть все</span>
       </div>
       
       <div class="categories-grid">
@@ -29,7 +29,6 @@
           v-for="category in popularCategories" 
           :key="category.id" 
           class="category-card"
-          @click="navigateToSearch({ categories: [category.id] })"
         >
           <div class="category-icon">
             <i :class="category.icon"></i>
@@ -44,7 +43,7 @@
     <section class="featured-courses">
       <div class="section-header">
         <h2>Популярные курсы</h2>
-        <router-link to="/search" class="view-all">Смотреть все</router-link>
+        <span class="view-all">Смотреть все</span>
       </div>
       
       <div class="courses-carousel">
@@ -52,7 +51,6 @@
           v-for="course in featuredCourses" 
           :key="course.id" 
           class="course-card"
-          @click="navigateToCourse(course.id)"
         >
           <div class="course-image">
             <img :src="course.imageUrl || '/placeholder-course.jpg'" :alt="course.title" />
@@ -80,7 +78,7 @@
     <section class="new-courses">
       <div class="section-header">
         <h2>Новые поступления</h2>
-        <router-link to="/search?sort=newest" class="view-all">Смотреть все</router-link>
+        <span class="view-all">Смотреть все</span>
       </div>
       
       <div class="courses-grid">
@@ -88,7 +86,6 @@
           v-for="course in newCourses" 
           :key="course.id" 
           class="course-card"
-          @click="navigateToCourse(course.id)"
         >
           <div class="course-image">
             <img :src="course.imageUrl || '/placeholder-course.jpg'" :alt="course.title" />
@@ -137,13 +134,13 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useCoursesStore } from '@/store/courses';
+import { useCoursesStore } from '@/store/courses'; // Оставляем импорт для совместимости
 
 export default {
   name: 'HomePage',
   setup() {
-    const router = useRouter();
+    // Удаляем неиспользуемый роутер
+    // const router = useRouter();
     const coursesStore = useCoursesStore();
     
     const searchQuery = ref('');
@@ -204,31 +201,16 @@ export default {
       return platform ? platform.name : 'Неизвестно';
     };
     
-    // Методы навигации
+    // Упрощаем методы навигации - просто логируем действия
     const searchCourses = () => {
-      router.push({
-        path: '/search',
-        query: { q: searchQuery.value }
-      });
-    };
-    
-    const navigateToCourse = (courseId) => {
-      router.push(`/courses/${courseId}`);
-    };
-    
-    const navigateToSearch = (params) => {
-      router.push({
-        path: '/search',
-        query: params
-      });
+      console.log('Поиск курсов:', searchQuery.value);
+      // Для отладки: alert(`Поиск: ${searchQuery.value}`);
     };
     
     // Загрузка данных при монтировании компонента
     onMounted(async () => {
       try {
-        // В реальном проекте здесь будет запрос к API/store для загрузки данных
-        // В данном примере используем моковые данные
-        
+        // Используем моковые данные, которые уже есть в компоненте
         featuredCourses.value = [
           {
             id: 1,
@@ -329,9 +311,7 @@ export default {
       formatPrice,
       getCategoryName,
       getPlatformName,
-      searchCourses,
-      navigateToCourse,
-      navigateToSearch
+      searchCourses
     };
   }
 };
@@ -412,6 +392,7 @@ export default {
     color: #2563eb;
     text-decoration: none;
     font-weight: 500;
+    cursor: pointer;
     
     &:hover {
       text-decoration: underline;

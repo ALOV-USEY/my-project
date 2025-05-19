@@ -17,27 +17,27 @@ const routes = [
         path: '/auth',
         component: AuthPage,
         meta: { guest: true }
-    },
-    {
-        path: '/courses/:id',
-        component: CourseDetailPage,
-        meta: { requiresAuth: true }
-    },
-    {
-        path: '/profile',
-        component: ProfilePage,
-        meta: { requiresAuth: true }
-    },
-    {
-        path: '/favorites',
-        component: FavoritesPage,
-        meta: { requiresAuth: true }
-    },
-    {
-        path: '/search',
-        component: SearchPage,
-        meta: { requiresAuth: true }
     }
+    // {
+    //     path: '/courses/:id',
+    //     component: CourseDetailPage,
+    //     meta: { requiresAuth: true }
+    // },
+    // {
+    //     path: '/profile',
+    //     component: ProfilePage,
+    //     meta: { requiresAuth: true }
+    // },
+    // {
+    //     path: '/favorites',
+    //     component: FavoritesPage,
+    //     meta: { requiresAuth: true }
+    // },
+    // {
+    //     path: '/search',
+    //     component: SearchPage,
+    //     meta: { requiresAuth: true }
+    // }
 ];
 
 const router = createRouter({
