@@ -259,7 +259,7 @@
 </template>
 
 <script>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 export default {
@@ -393,7 +393,7 @@ export default {
     ]);
     
     // Настройки пользователя
-    const userSettings = reactive({
+    const userSettings = ref({
       name: 'Иван Иванов',
       email: 'user@example.com',
       phone: '+7 (999) 123-45-67',
@@ -409,12 +409,7 @@ export default {
     });
     
     // Сохранение исходных настроек для функции отмены
-    const originalSettings = { 
-      name: userSettings.name,
-      email: userSettings.email,
-      phone: userSettings.phone,
-      notifications: { ...userSettings.notifications }
-    };
+    const originalSettings = { ...userSettings.value };
     
     // Функции для работы с данными
     const formatStudentCount = (count) => {
@@ -459,38 +454,38 @@ export default {
     // Функции для настроек профиля
     const saveSettings = () => {
       // Проверка паролей
-      if (userSettings.newPassword && 
-          userSettings.newPassword !== userSettings.confirmPassword) {
+      if (userSettings.value.newPassword && 
+          userSettings.value.newPassword !== userSettings.value.confirmPassword) {
         alert('Пароли не совпадают');
         return;
       }
       
-      console.log('Настройки сохранены', userSettings);
+      console.log('Настройки сохранены', userSettings.value);
       alert('Настройки профиля успешно сохранены');
       
       // Сброс полей пароля
-      userSettings.currentPassword = '';
-      userSettings.newPassword = '';
-      userSettings.confirmPassword = '';
+      userSettings.value.currentPassword = '';
+      userSettings.value.newPassword = '';
+      userSettings.value.confirmPassword = '';
       
       // Обновление оригинальных настроек
-      originalSettings.name = userSettings.name;
-      originalSettings.email = userSettings.email;
-      originalSettings.phone = userSettings.phone;
-      originalSettings.notifications = { ...userSettings.notifications };
+      originalSettings.name = userSettings.value.name;
+      originalSettings.email = userSettings.value.email;
+      originalSettings.phone = userSettings.value.phone;
+      originalSettings.notifications = { ...userSettings.value.notifications };
     };
     
     const resetSettings = () => {
       // Восстановление настроек из оригинала
-      userSettings.name = originalSettings.name;
-      userSettings.email = originalSettings.email;
-      userSettings.phone = originalSettings.phone;
-      userSettings.notifications = { ...originalSettings.notifications };
+      userSettings.value.name = originalSettings.name;
+      userSettings.value.email = originalSettings.email;
+      userSettings.value.phone = originalSettings.phone;
+      userSettings.value.notifications = { ...originalSettings.notifications };
       
       // Сброс полей пароля
-      userSettings.currentPassword = '';
-      userSettings.newPassword = '';
-      userSettings.confirmPassword = '';
+      userSettings.value.currentPassword = '';
+      userSettings.value.newPassword = '';
+      userSettings.value.confirmPassword = '';
       
       console.log('Настройки сброшены');
     };
@@ -515,6 +510,194 @@ export default {
       saveSettings,
       resetSettings
     };
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 0;
+  
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+  }
+  
+  h3 {
+    font-size: 18px;
+    color: #1f2937;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    font-size: 16px;
+    color: #6b7280;
+    margin-bottom: 20px;
+  }
+  
+  .browse-courses-btn {
+    padding: 12px 25px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+    
+    &:hover {
+      background: #2563eb;
+    }
+  }
+}
+
+.settings-form {
+  .form-section {
+    margin-bottom: 30px;
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    
+    h3 {
+      font-size: 18px;
+      color: #1f2937;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+    
+    label {
+      display: block;
+      font-size: 14px;
+      color: #4b5563;
+      margin-bottom: 8px;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+      
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+      }
+    }
+  }
+  
+  .checkbox-group {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    
+    label {
+      font-size: 16px;
+      color: #4b5563;
+    }
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    
+    .save-settings-btn,
+    .cancel-btn {
+      padding: 12px 25px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .save-settings-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      
+      &:hover {
+        background: #2563eb;
+      }
+    }
+    
+    .cancel-btn {
+      background: white;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+      
+      &:hover {
+        background: #f3f4f6;
+      }
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .user-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .tabs-header {
+    overflow-x: auto;
+    white-space: nowrap;
+    
+    .tab-item {
+      padding: 12px 15px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    
+    .profile-avatar {
+      margin-right: 0;
+      margin-bottom: 20px;
+    }
+    
+    .profile-info {
+      margin-bottom: 20px;
+    }
+  }
+  
+  .history-item {
+    flex-direction: column;
+    
+    .history-image {
+      width: 100%;
+      height: 150px;
+    }
+    
+    .history-actions {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-stats {
+    grid-template-columns: 1fr;
   }
 };
 </script>
@@ -855,6 +1038,41 @@ export default {
       }
     }
     
-    .history-actions {
+          .history-actions {
       display: flex;
-      flex
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px;
+      
+      .view-course-btn, 
+      .add-favorite-btn {
+        padding: 8px 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        white-space: nowrap;
+      }
+      
+      .view-course-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        
+        &:hover {
+          background: #2563eb;
+        }
+      }
+      
+      .add-favorite-btn {
+        background: transparent;
+        border: 1px solid #f59e0b;
+        color: #f59e0b;
+        
+        &:hover {
+          background: #f59e0b;
+          color: white;
+        }
+      }
+    }
