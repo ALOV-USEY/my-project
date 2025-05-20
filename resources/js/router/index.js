@@ -23,11 +23,11 @@ const routes = [
          component: CourseDetailPage,
          meta: { guest: true }
     },
-    // {
-    //     path: '/profile',
-    //     component: ProfilePage,
-    //     meta: { requiresAuth: true }
-    // },
+     {
+         path: '/profile',
+         component: ProfilePage,
+         meta: { guest: true }
+     },
     // {
     //     path: '/favorites',
     //     component: FavoritesPage,
