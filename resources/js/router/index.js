@@ -67,9 +67,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import AuthPage from '../pages/AuthPage.vue';
 import HomePage from '../pages/HomePage.vue';
 import CourseDetailPage from '../pages/CourseDetail.vue';
-//import ProfilePage from '../pages/ProfilePage.vue';
+import ProfilePage from '../pages/ProfilePage.vue';
 //import FavoritesPage from '../pages/FavoritesPage.vue';
-//import SearchPage from '../pages/SearchPage.vue';
+import SearchPage from '../pages/SearchPage.vue';
 import { useAuthStore } from '../store/auth';
 
 const routes = [
@@ -88,21 +88,21 @@ const routes = [
          component: CourseDetailPage,
          meta: { requiresAuth: true }
     },
-    // {
-    //      path: '/profile',
-    //      component: ProfilePage,
-    //      meta: { requiresAuth: true, guestRestricted: true } // Только для авторизованных пользователей
-    // },
+    {
+         path: '/profile',
+         component: ProfilePage,
+         meta: { requiresAuth: true, guestRestricted: true } // Только для авторизованных пользователей
+    },
     // {
     //     path: '/favorites',
     //     component: FavoritesPage,
     //     meta: { requiresAuth: true, guestRestricted: true } // Только для авторизованных пользователей
     // },
-    // {
-    //     path: '/search',
-    //     component: SearchPage,
-    //     meta: { requiresAuth: true }
-    // }
+    {
+        path: '/search',
+        component: SearchPage,
+        meta: { requiresAuth: true }
+    }
 ];
 
 const router = createRouter({

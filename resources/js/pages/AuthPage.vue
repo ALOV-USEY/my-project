@@ -21,6 +21,19 @@
         </button>
       </div>
       
+      <!-- Кнопка входа как гость -->
+      <div class="guest-section">
+        <div class="divider">
+          <span>или</span>
+        </div>
+        <button @click="handleGuestLogin" class="guest-btn" :disabled="isLoading">
+          Войти как гость
+        </button>
+        <p class="guest-note">
+          Получите доступ к каталогу курсов без регистрации
+        </p>
+      </div>
+      
       <!-- Форма входа -->
       <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="auth-form">
         <div class="form-group">
