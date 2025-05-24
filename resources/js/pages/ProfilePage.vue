@@ -1,1078 +1,1047 @@
 <template>
-  <div class="profile-container">
-    <!-- Шапка профиля -->
-    <section class="profile-header">
-      <div class="profile-avatar">
-        <img src="/images/avatar-placeholder.jpg" alt="Аватар пользователя" />
+  <div class="profile-page">
+    <header class="profile-header">
+      <div class="container">
+        <div class="breadcrumbs">
+          <router-link to="/">Главная</router-link> / 
+          <span>Профиль</span>
+        </div>
       </div>
-      <div class="profile-info">
-        <h1>Иван Иванов</h1>
-        <p class="profile-email">user@example.com</p>
-        <p class="profile-joined">На платформе с января 2025</p>
-      </div>
-      <button class="edit-profile-btn">Редактировать профиль</button>
-    </section>
+    </header>
     
-    <!-- Статистика пользователя -->
-    <section class="user-stats">
-      <div class="stat-card">
-        <div class="stat-value">12</div>
-        <div class="stat-label">Избранных курсов</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">5</div>
-        <div class="stat-label">Записанных курсов</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">3</div>
-        <div class="stat-label">Завершенных курсов</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">4.8</div>
-        <div class="stat-label">Средний рейтинг</div>
-      </div>
-    </section>
-    
-    <!-- Вкладки с контентом -->
-    <section class="profile-tabs">
-      <div class="tabs-header">
-        <div 
-          class="tab-item" 
-          :class="{ 'active': activeTab === 'enrolled' }"
-          @click="activeTab = 'enrolled'"
-        >
-          Записанные курсы
-        </div>
-        <div 
-          class="tab-item" 
-          :class="{ 'active': activeTab === 'favorites' }"
-          @click="activeTab = 'favorites'"
-        >
-          Избранное
-        </div>
-        <div 
-          class="tab-item" 
-          :class="{ 'active': activeTab === 'history' }"
-          @click="activeTab = 'history'"
-        >
-          История просмотров
-        </div>
-        <div 
-          class="tab-item" 
-          :class="{ 'active': activeTab === 'settings' }"
-          @click="activeTab = 'settings'"
-        >
-          Настройки
-        </div>
-      </div>
-      
-      <!-- Содержимое вкладок -->
-      <div class="tabs-content">
-        <!-- Записанные курсы -->
-        <div v-if="activeTab === 'enrolled'" class="tab-content">
-          <h2>Записанные курсы</h2>
-          
-          <div class="courses-grid">
-            <div v-for="course in enrolledCourses" :key="course.id" class="course-card">
-              <div class="course-image">
-                <img :src="course.imageUrl || '/placeholder-course.jpg'" :alt="course.title" />
-                <div class="course-platform">{{ course.platform }}</div>
-                <div class="course-progress">
-                  <div class="progress-bar" :style="{ width: `${course.progress}%` }"></div>
-                </div>
+    <div class="container">
+      <div class="profile-content">
+        <div class="profile-sidebar">
+          <div class="profile-card">
+            <div class="profile-avatar-container">
+              <img :src="user.avatar" alt="Аватар пользователя" class="profile-avatar">
+              <button class="avatar-edit-btn">
+                <i class="fas fa-camera"></i>
+              </button>
+            </div>
+            
+            <h2 class="profile-name">{{ user.fullName }}</h2>
+            <p class="profile-email">{{ user.email }}</p>
+            
+            <div class="profile-stats">
+              <div class="stat">
+                <span class="stat-value">{{ user.enrolledCourses.length }}</span>
+                <span class="stat-label">Курсов</span>
               </div>
-              <div class="course-info">
-                <h3 class="course-title">{{ course.title }}</h3>
-                <div class="course-meta">
-                  <span class="course-rating">
-                    <span class="stars">★★★★★</span>
-                    <span class="rating-value">{{ course.rating }}</span>
+              <div class="stat">
+                <span class="stat-value">{{ user.completedCourses }}</span>
+                <span class="stat-label">Завершено</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">{{ getTotalCertificates() }}</span>
+                <span class="stat-label">Сертификаты</span>
+              </div>
+            </div>
+            
+            <div class="profile-menu">
+              <div 
+                v-for="(menuItem, index) in menuItems" 
+                :key="index" 
+                class="menu-item" 
+                :class="{ active: activeTab === menuItem.id }"
+                @click="setActiveTab(menuItem.id)"
+              >
+                <i :class="['fas', menuItem.icon]"></i>
+                <span>{{ menuItem.title }}</span>
+              </div>
+            </div>
+            
+            <button class="btn btn-outline btn-block">
+              <i class="fas fa-sign-out-alt"></i> Выйти
+            </button>
+          </div>
+        </div>
+        
+        <div class="profile-main">
+          <!-- Мои курсы -->
+          <div v-if="activeTab === 'courses'" class="tab-content">
+            <div class="tab-header">
+              <h2>Мои курсы</h2>
+              <div class="tab-filters">
+                <div class="filter-options">
+                  <span 
+                    v-for="(filter, index) in courseFilters" 
+                    :key="index" 
+                    :class="['filter-option', { active: currentCourseFilter === filter.id }]"
+                    @click="currentCourseFilter = filter.id"
+                  >
+                    {{ filter.title }}
                   </span>
-                  <span class="course-students">{{ formatStudentCount(course.studentCount) }} студентов</span>
                 </div>
-                <div class="course-category">{{ course.category }}</div>
-                <div class="course-progress-info">
-                  <span>Прогресс: {{ course.progress }}%</span>
-                  <span>{{ course.completedLessons }}/{{ course.totalLessons }} уроков</span>
+                <div class="search-box">
+                  <i class="fas fa-search"></i>
+                  <input type="text" placeholder="Поиск курсов" v-model="courseSearchQuery">
                 </div>
-              </div>
-            </div>
-          </div>
-          
-          <div v-if="enrolledCourses.length === 0" class="empty-state">
-            <div class="empty-icon">📚</div>
-            <h3>У вас пока нет записанных курсов</h3>
-            <p>Найдите интересующие вас курсы и начните обучение</p>
-            <button class="browse-courses-btn" @click="browseCourses">Найти курсы</button>
-          </div>
-        </div>
-        
-        <!-- Избранное -->
-        <div v-if="activeTab === 'favorites'" class="tab-content">
-          <h2>Избранные курсы</h2>
-          
-          <div class="courses-grid">
-            <div v-for="course in favoriteCourses" :key="course.id" class="course-card">
-              <div class="course-image">
-                <img :src="course.imageUrl || '/placeholder-course.jpg'" :alt="course.title" />
-                <div class="course-platform">{{ course.platform }}</div>
-                <div class="favorite-badge">★</div>
-              </div>
-              <div class="course-info">
-                <h3 class="course-title">{{ course.title }}</h3>
-                <div class="course-meta">
-                  <span class="course-rating">
-                    <span class="stars">★★★★★</span>
-                    <span class="rating-value">{{ course.rating }}</span>
-                  </span>
-                  <span class="course-students">{{ formatStudentCount(course.studentCount) }} студентов</span>
-                </div>
-                <div class="course-category">{{ course.category }}</div>
-                <div class="course-price" :class="{ 'free': course.price === 0 }">
-                  {{ course.price === 0 ? 'Бесплатно' : `${formatPrice(course.price)} ₽` }}
-                </div>
-                <button class="remove-favorite-btn" @click="removeFavorite(course.id)">
-                  Удалить из избранного
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div v-if="favoriteCourses.length === 0" class="empty-state">
-            <div class="empty-icon">❤️</div>
-            <h3>У вас пока нет избранных курсов</h3>
-            <p>Добавляйте интересные курсы в избранное, чтобы не потерять их</p>
-            <button class="browse-courses-btn" @click="browseCourses">Найти курсы</button>
-          </div>
-        </div>
-        
-        <!-- История просмотров -->
-        <div v-if="activeTab === 'history'" class="tab-content">
-          <h2>История просмотров</h2>
-          
-          <div class="history-list">
-            <div v-for="(course, index) in viewHistory" :key="index" class="history-item">
-              <div class="history-image">
-                <img :src="course.imageUrl || '/placeholder-course.jpg'" :alt="course.title" />
-              </div>
-              <div class="history-info">
-                <h3>{{ course.title }}</h3>
-                <div class="history-meta">
-                  <span class="history-platform">{{ course.platform }}</span>
-                  <span class="history-category">{{ course.category }}</span>
-                </div>
-                <div class="history-date">Просмотрено: {{ course.viewedAt }}</div>
-              </div>
-              <div class="history-actions">
-                <button class="view-course-btn" @click="viewCourse(course.id)">Открыть</button>
-                <button class="add-favorite-btn" v-if="!course.isFavorite" @click="addToFavorites(course.id)">
-                  В избранное
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div v-if="viewHistory.length === 0" class="empty-state">
-            <div class="empty-icon">🔍</div>
-            <h3>История просмотров пуста</h3>
-            <p>Здесь будут отображаться просмотренные вами курсы</p>
-            <button class="browse-courses-btn" @click="browseCourses">Найти курсы</button>
-          </div>
-        </div>
-        
-        <!-- Настройки профиля -->
-        <div v-if="activeTab === 'settings'" class="tab-content">
-          <h2>Настройки профиля</h2>
-          
-          <div class="settings-form">
-            <div class="form-section">
-              <h3>Личная информация</h3>
-              
-              <div class="form-group">
-                <label for="name">ФИО</label>
-                <input type="text" id="name" v-model="userSettings.name" placeholder="Ваше полное имя">
-              </div>
-              
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" v-model="userSettings.email" placeholder="ваш@email.com">
-              </div>
-              
-              <div class="form-group">
-                <label for="phone">Телефон</label>
-                <input type="tel" id="phone" v-model="userSettings.phone" placeholder="+7 (XXX) XXX-XX-XX">
               </div>
             </div>
             
-            <div class="form-section">
-              <h3>Настройки уведомлений</h3>
-              
-              <div class="checkbox-group">
-                <input type="checkbox" id="email_notifications" v-model="userSettings.notifications.email">
-                <label for="email_notifications">Уведомления по email</label>
+            <div class="courses-list">
+              <div v-if="filteredCourses.length === 0" class="empty-state">
+                <i class="fas fa-book-open"></i>
+                <p>У вас пока нет курсов</p>
+                <router-link to="/courses" class="btn btn-primary">Найти курсы</router-link>
               </div>
               
-              <div class="checkbox-group">
-                <input type="checkbox" id="new_courses" v-model="userSettings.notifications.newCourses">
-                <label for="new_courses">Новые курсы по интересам</label>
+              <div v-for="(course, index) in filteredCourses" :key="index" class="course-card">
+                <div class="course-image">
+                  <img :src="course.image" alt="Course preview">
+                  <div v-if="course.status === 'in-progress'" class="course-badge in-progress">В процессе</div>
+                  <div v-else-if="course.status === 'completed'" class="course-badge completed">Завершён</div>
+                </div>
+                
+                <div class="course-info">
+                  <h3 class="course-title">{{ course.title }}</h3>
+                  <div class="course-meta">
+                    <span class="author">{{ course.author }}</span>
+                    <span class="progress">
+                      <div class="progress-bar">
+                        <div class="progress-fill" :style="{ width: course.progress + '%' }"></div>
+                      </div>
+                      <span class="progress-text">{{ course.progress }}%</span>
+                    </span>
+                  </div>
+                  
+                  <div class="course-actions">
+                    <router-link :to="'/course/' + course.id" class="btn btn-primary">Продолжить</router-link>
+                    <button v-if="course.status === 'completed' && course.certificateAvailable" class="btn btn-outline">
+                      <i class="fas fa-certificate"></i> Сертификат
+                    </button>
+                  </div>
+                </div>
               </div>
-              
-              <div class="checkbox-group">
-                <input type="checkbox" id="discounts" v-model="userSettings.notifications.discounts">
-                <label for="discounts">Скидки и акции</label>
-              </div>
-              
-              <div class="checkbox-group">
-                <input type="checkbox" id="reminders" v-model="userSettings.notifications.reminders">
-                <label for="reminders">Напоминания о курсах</label>
+            </div>
+          </div>
+          
+          <!-- Избранное -->
+          <div v-if="activeTab === 'favorites'" class="tab-content">
+            <div class="tab-header">
+              <h2>Избранное</h2>
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Поиск в избранном" v-model="favoritesSearchQuery">
               </div>
             </div>
             
-            <div class="form-section">
-              <h3>Пароль</h3>
-              
-              <div class="form-group">
-                <label for="current_password">Текущий пароль</label>
-                <input type="password" id="current_password" v-model="userSettings.currentPassword" placeholder="Введите текущий пароль">
+            <div class="favorites-list">
+              <div v-if="filteredFavorites.length === 0" class="empty-state">
+                <i class="fas fa-heart"></i>
+                <p>В избранном пока ничего нет</p>
+                <router-link to="/courses" class="btn btn-primary">Найти курсы</router-link>
               </div>
               
-              <div class="form-group">
-                <label for="new_password">Новый пароль</label>
-                <input type="password" id="new_password" v-model="userSettings.newPassword" placeholder="Введите новый пароль">
+              <div v-for="(course, index) in filteredFavorites" :key="index" class="favorite-card">
+                <div class="favorite-image">
+                  <img :src="course.image" alt="Course preview">
+                </div>
+                
+                <div class="favorite-info">
+                  <h3 class="favorite-title">{{ course.title }}</h3>
+                  <div class="favorite-meta">
+                    <span class="author">{{ course.author }}</span>
+                    <span class="rating">
+                      <i class="fas fa-star"></i> {{ course.rating }}
+                    </span>
+                    <span class="students">
+                      <i class="fas fa-user"></i> {{ course.studentsCount }}
+                    </span>
+                  </div>
+                  
+                  <div class="favorite-price">
+                    <span class="current-price">{{ course.price }} ₽</span>
+                    <span v-if="course.originalPrice" class="original-price">{{ course.originalPrice }} ₽</span>
+                  </div>
+                  
+                  <div class="favorite-actions">
+                    <router-link :to="'/course/' + course.id" class="btn btn-primary">Подробнее</router-link>
+                    <button class="btn btn-outline" @click="removeFromFavorites(course.id)">
+                      <i class="fas fa-heart"></i>
+                    </button>
+                  </div>
+                </div>
               </div>
-              
-              <div class="form-group">
-                <label for="confirm_password">Подтверждение пароля</label>
-                <input type="password" id="confirm_password" v-model="userSettings.confirmPassword" placeholder="Подтвердите новый пароль">
-              </div>
+            </div>
+          </div>
+          
+          <!-- Сертификаты -->
+          <div v-if="activeTab === 'certificates'" class="tab-content">
+            <div class="tab-header">
+              <h2>Мои сертификаты</h2>
             </div>
             
-            <div class="form-actions">
-              <button class="save-settings-btn" @click="saveSettings">Сохранить изменения</button>
-              <button class="cancel-btn" @click="resetSettings">Отмена</button>
+            <div class="certificates-list">
+              <div v-if="user.certificates.length === 0" class="empty-state">
+                <i class="fas fa-certificate"></i>
+                <p>У вас пока нет сертификатов</p>
+                <p class="empty-state-subtitle">Завершите курс, чтобы получить сертификат</p>
+              </div>
+              
+              <div v-for="(certificate, index) in user.certificates" :key="index" class="certificate-card">
+                <div class="certificate-preview">
+                  <img src="/resources/images/certificate-template.jpg" alt="Certificate preview">
+                  <div class="certificate-overlay">
+                    <button class="btn btn-primary">
+                      <i class="fas fa-download"></i> Скачать
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="certificate-info">
+                  <h3 class="certificate-title">{{ certificate.courseTitle }}</h3>
+                  <p class="certificate-date">Получен: {{ certificate.issueDate }}</p>
+                </div>
+              </div>
             </div>
+          </div>
+          
+          <!-- Настройки -->
+          <div v-if="activeTab === 'settings'" class="tab-content">
+            <div class="tab-header">
+              <h2>Настройки профиля</h2>
+            </div>
+            
+            <form class="settings-form" @submit.prevent="saveProfile">
+              <div class="form-section">
+                <h3>Личные данные</h3>
+                
+                <div class="form-group">
+                  <label for="firstName">Имя</label>
+                  <input type="text" id="firstName" v-model="profileForm.firstName" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="lastName">Фамилия</label>
+                  <input type="text" id="lastName" v-model="profileForm.lastName" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" v-model="profileForm.email" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="phone">Телефон</label>
+                  <input type="tel" id="phone" v-model="profileForm.phone">
+                </div>
+              </div>
+              
+              <div class="form-section">
+                <h3>Безопасность</h3>
+                
+                <div class="form-group">
+                  <label for="currentPassword">Текущий пароль</label>
+                  <input type="password" id="currentPassword" v-model="profileForm.currentPassword">
+                </div>
+                
+                <div class="form-group">
+                  <label for="newPassword">Новый пароль</label>
+                  <input type="password" id="newPassword" v-model="profileForm.newPassword">
+                </div>
+                
+                <div class="form-group">
+                  <label for="confirmPassword">Подтвердите пароль</label>
+                  <input type="password" id="confirmPassword" v-model="profileForm.confirmPassword">
+                </div>
+              </div>
+              
+              <div class="form-section">
+                <h3>Уведомления</h3>
+                
+                <div class="form-check">
+                  <input type="checkbox" id="emailNotifications" v-model="profileForm.emailNotifications">
+                  <label for="emailNotifications">Получать уведомления по email</label>
+                </div>
+                
+                <div class="form-check">
+                  <input type="checkbox" id="courseUpdates" v-model="profileForm.courseUpdates">
+                  <label for="courseUpdates">Уведомления об обновлениях курсов</label>
+                </div>
+                
+                <div class="form-check">
+                  <input type="checkbox" id="promotions" v-model="profileForm.promotions">
+                  <label for="promotions">Акции и специальные предложения</label>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <button type="button" class="btn btn-outline">Отменить</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-
 export default {
   name: 'ProfilePage',
-  setup() {
-    const router = useRouter();
-    const activeTab = ref('enrolled');
-    
-    // Моковые данные для записанных курсов
-    const enrolledCourses = ref([
-      {
-        id: 1,
-        title: 'Основы программирования на Python',
-        platform: 'Stepik',
-        category: 'Программирование',
-        rating: 4.8,
-        studentCount: 154000,
-        imageUrl: '/images/courses/python-basics.jpg',
-        progress: 75,
-        completedLessons: 15,
-        totalLessons: 20
-      },
-      {
-        id: 2,
-        title: 'UX/UI дизайн: с нуля до PRO',
-        platform: 'Skillbox',
-        category: 'Дизайн',
-        rating: 4.7,
-        studentCount: 32500,
-        imageUrl: '/images/courses/ux-ui-design.jpg',
-        progress: 40,
-        completedLessons: 8,
-        totalLessons: 20
-      },
-      {
-        id: 3,
-        title: 'Анализ данных в Excel и Power BI',
-        platform: 'Coursera',
-        category: 'Наука о данных',
-        rating: 4.9,
-        studentCount: 65800,
-        imageUrl: '/images/courses/data-analysis.jpg',
-        progress: 10,
-        completedLessons: 2,
-        totalLessons: 18
-      }
-    ]);
-    
-    // Моковые данные для избранных курсов
-    const favoriteCourses = ref([
-      {
-        id: 4,
-        title: 'React для начинающих: полное руководство',
-        platform: 'Udemy',
-        category: 'Программирование',
-        price: 3500,
-        rating: 4.7,
-        studentCount: 1200,
-        imageUrl: '/images/courses/react-beginners.jpg'
-      },
-      {
-        id: 5,
-        title: 'Финансовая грамотность для всех',
-        platform: 'Нетология',
-        category: 'Бизнес',
-        price: 0,
-        rating: 4.5,
-        studentCount: 3500,
-        imageUrl: '/images/courses/finance.jpg'
-      },
-      {
-        id: 6,
-        title: 'Промышленный дизайн от А до Я',
-        platform: 'Skillbox',
-        category: 'Дизайн',
-        price: 56000,
-        rating: 4.8,
-        studentCount: 750,
-        imageUrl: '/images/courses/industrial-design.jpg'
-      },
-      {
-        id: 7,
-        title: 'Английский для IT-специалистов',
-        platform: 'Stepik',
-        category: 'Иностранные языки',
-        price: 9900,
-        rating: 4.6,
-        studentCount: 2100,
-        imageUrl: '/images/courses/english-it.jpg'
-      }
-    ]);
-    
-    // Моковые данные для истории просмотров
-    const viewHistory = ref([
-      {
-        id: 8,
-        title: 'Мастер-класс по digital-маркетингу',
-        platform: 'Нетология',
-        category: 'Маркетинг',
-        imageUrl: '/images/courses/digital-marketing.jpg',
-        viewedAt: '20 мая 2025, 10:15',
-        isFavorite: false
-      },
-      {
-        id: 7,
-        title: 'Английский для IT-специалистов',
-        platform: 'Stepik',
-        category: 'Иностранные языки',
-        imageUrl: '/images/courses/english-it.jpg',
-        viewedAt: '19 мая 2025, 18:30',
-        isFavorite: true
-      },
-      {
-        id: 9,
-        title: 'Основы JavaScript и веб-разработки',
-        platform: 'GeekBrains',
-        category: 'Программирование',
-        imageUrl: '/images/courses/javascript-basics.jpg',
-        viewedAt: '18 мая 2025, 14:20',
-        isFavorite: false
-      },
-      {
-        id: 10,
-        title: 'Фотография для начинающих',
-        platform: 'Udemy',
-        category: 'Искусство',
-        imageUrl: '/images/courses/photography.jpg',
-        viewedAt: '15 мая 2025, 20:45',
-        isFavorite: false
-      }
-    ]);
-    
-    // Настройки пользователя
-    const userSettings = ref({
-      name: 'Иван Иванов',
-      email: 'user@example.com',
-      phone: '+7 (999) 123-45-67',
-      notifications: {
-        email: true,
-        newCourses: true,
-        discounts: true,
-        reminders: false
-      },
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
-    
-    // Сохранение исходных настроек для функции отмены
-    const originalSettings = { ...userSettings.value };
-    
-    // Функции для работы с данными
-    const formatStudentCount = (count) => {
-      if (count >= 1000000) {
-        return (count / 1000000).toFixed(1) + 'M';
-      } else if (count >= 1000) {
-        return (count / 1000).toFixed(1) + 'K';
-      }
-      return count;
-    };
-    
-    const formatPrice = (price) => {
-      return new Intl.NumberFormat('ru-RU').format(price);
-    };
-    
-    // Функции для управления избранным
-    const removeFavorite = (courseId) => {
-      favoriteCourses.value = favoriteCourses.value.filter(course => course.id !== courseId);
-      console.log(`Курс ${courseId} удален из избранного`);
-    };
-    
-    const addToFavorites = (courseId) => {
-      const courseToAdd = viewHistory.value.find(course => course.id === courseId);
-      if (courseToAdd) {
-        courseToAdd.isFavorite = true;
-        console.log(`Курс ${courseId} добавлен в избранное`);
-        // Здесь логика добавления в избранное
-      }
-    };
-    
-    // Функции для навигации
-    const viewCourse = (courseId) => {
-      console.log(`Переход к курсу ${courseId}`);
-      // router.push(`/courses/${courseId}`);
-    };
-    
-    const browseCourses = () => {
-      console.log('Переход к странице поиска курсов');
-      router.push('/');
-    };
-    
-    // Функции для настроек профиля
-    const saveSettings = () => {
-      // Проверка паролей
-      if (userSettings.value.newPassword && 
-          userSettings.value.newPassword !== userSettings.value.confirmPassword) {
-        alert('Пароли не совпадают');
-        return;
-      }
-      
-      console.log('Настройки сохранены', userSettings.value);
-      alert('Настройки профиля успешно сохранены');
-      
-      // Сброс полей пароля
-      userSettings.value.currentPassword = '';
-      userSettings.value.newPassword = '';
-      userSettings.value.confirmPassword = '';
-      
-      // Обновление оригинальных настроек
-      originalSettings.name = userSettings.value.name;
-      originalSettings.email = userSettings.value.email;
-      originalSettings.phone = userSettings.value.phone;
-      originalSettings.notifications = { ...userSettings.value.notifications };
-    };
-    
-    const resetSettings = () => {
-      // Восстановление настроек из оригинала
-      userSettings.value.name = originalSettings.name;
-      userSettings.value.email = originalSettings.email;
-      userSettings.value.phone = originalSettings.phone;
-      userSettings.value.notifications = { ...originalSettings.notifications };
-      
-      // Сброс полей пароля
-      userSettings.value.currentPassword = '';
-      userSettings.value.newPassword = '';
-      userSettings.value.confirmPassword = '';
-      
-      console.log('Настройки сброшены');
-    };
-    
-    onMounted(() => {
-      console.log('ProfilePage mounted');
-      // Здесь при необходимости можно загрузить реальные данные пользователя
-    });
-    
+  data() {
     return {
-      activeTab,
-      enrolledCourses,
-      favoriteCourses,
-      viewHistory,
-      userSettings,
-      formatStudentCount,
-      formatPrice,
-      removeFavorite,
-      addToFavorites,
-      viewCourse,
-      browseCourses,
-      saveSettings,
-      resetSettings
+      activeTab: 'courses',
+      currentCourseFilter: 'all',
+      courseSearchQuery: '',
+      favoritesSearchQuery: '',
+      user: {
+        id: 1,
+        fullName: 'Анна Смирнова',
+        firstName: 'Анна',
+        lastName: 'Смирнова',
+        email: 'anna.smirnova@example.com',
+        phone: '+7 (900) 123-45-67',
+        avatar: '/resources/images/user-avatar.jpg',
+        completedCourses: 3,
+        enrolledCourses: [
+          {
+            id: 1,
+            title: 'Полное руководство по Vue.js',
+            author: 'Иван Петров',
+            image: '/resources/images/course1-image.jpg',
+            progress: 78,
+            status: 'in-progress',
+            certificateAvailable: false
+          },
+          {
+            id: 2,
+            title: 'JavaScript для начинающих',
+            author: 'Мария Иванова',
+            image: '/resources/images/course2-image.jpg',
+            progress: 100,
+            status: 'completed',
+            certificateAvailable: true
+          },
+          {
+            id: 3,
+            title: 'HTML и CSS: основы веб-разработки',
+            author: 'Александр Соколов',
+            image: '/resources/images/course3-image.jpg',
+            progress: 100,
+            status: 'completed',
+            certificateAvailable: true
+          },
+          {
+            id: 4,
+            title: 'React для профессионалов',
+            author: 'Елена Васильева',
+            image: '/resources/images/course4-image.jpg',
+            progress: 100,
+            status: 'completed',
+            certificateAvailable: true
+          }
+        ],
+        favorites: [
+          {
+            id: 5,
+            title: 'Продвинутый TypeScript',
+            author: 'Сергей Новиков',
+            image: '/resources/images/course5-image.jpg',
+            rating: 4.9,
+            studentsCount: 1850,
+            price: '4 990',
+            originalPrice: '6 990'
+          },
+          {
+            id: 6,
+            title: 'Node.js: от основ до продакшена',
+            author: 'Дмитрий Козлов',
+            image: '/resources/images/course6-image.jpg',
+            rating: 4.7,
+            studentsCount: 2340,
+            price: '5 490',
+            originalPrice: null
+          }
+        ],
+        certificates: [
+          {
+            id: 1,
+            courseId: 2,
+            courseTitle: 'JavaScript для начинающих',
+            issueDate: '10.03.2025'
+          },
+          {
+            id: 2,
+            courseId: 3,
+            courseTitle: 'HTML и CSS: основы веб-разработки',
+            issueDate: '25.01.2025'
+          },
+          {
+            id: 3,
+            courseId: 4,
+            courseTitle: 'React для профессионалов',
+            issueDate: '15.04.2025'
+          }
+        ]
+      },
+      menuItems: [
+        { id: 'courses', title: 'Мои курсы', icon: 'fa-graduation-cap' },
+        { id: 'favorites', title: 'Избранное', icon: 'fa-heart' },
+        { id: 'certificates', title: 'Сертификаты', icon: 'fa-certificate' },
+        { id: 'settings', title: 'Настройки', icon: 'fa-cog' }
+      ],
+      courseFilters: [
+        { id: 'all', title: 'Все' },
+        { id: 'in-progress', title: 'В процессе' },
+        { id: 'completed', title: 'Завершённые' }
+      ],
+      profileForm: {
+        firstName: 'Анна',
+        lastName: 'Смирнова',
+        email: 'anna.smirnova@example.com',
+        phone: '+7 (900) 123-45-67',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        emailNotifications: true,
+        courseUpdates: true,
+        promotions: false
+      }
     };
-  }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 0;
-  
-  .empty-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-  }
-  
-  h3 {
-    font-size: 18px;
-    color: #1f2937;
-    margin-bottom: 10px;
-  }
-  
-  p {
-    font-size: 16px;
-    color: #6b7280;
-    margin-bottom: 20px;
-  }
-  
-  .browse-courses-btn {
-    padding: 12px 25px;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s;
-    
-    &:hover {
-      background: #2563eb;
-    }
-  }
-}
-
-.settings-form {
-  .form-section {
-    margin-bottom: 30px;
-    background: #f9fafb;
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid #e5e7eb;
-    
-    h3 {
-      font-size: 18px;
-      color: #1f2937;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #e5e7eb;
-    }
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-    
-    label {
-      display: block;
-      font-size: 14px;
-      color: #4b5563;
-      margin-bottom: 8px;
-    }
-    
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    input[type="password"] {
-      width: 100%;
-      padding: 12px 15px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 16px;
-      transition: border-color 0.3s;
+  },
+  computed: {
+    filteredCourses() {
+      let filtered = this.user.enrolledCourses;
       
-      &:focus {
-        outline: none;
-        border-color: #3b82f6;
+      // Фильтрация по статусу
+      if (this.currentCourseFilter !== 'all') {
+        filtered = filtered.filter(course => course.status === this.currentCourseFilter);
       }
-    }
-  }
-  
-  .checkbox-group {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    
-    input[type="checkbox"] {
-      margin-right: 10px;
-    }
-    
-    label {
-      font-size: 16px;
-      color: #4b5563;
-    }
-  }
-  
-  .form-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 30px;
-    
-    .save-settings-btn,
-    .cancel-btn {
-      padding: 12px 25px;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    
-    .save-settings-btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
       
-      &:hover {
-        background: #2563eb;
+      // Поиск по названию
+      if (this.courseSearchQuery.trim()) {
+        const query = this.courseSearchQuery.toLowerCase();
+        filtered = filtered.filter(
+          course => course.title.toLowerCase().includes(query) || 
+                   course.author.toLowerCase().includes(query)
+        );
       }
-    }
-    
-    .cancel-btn {
-      background: white;
-      color: #6b7280;
-      border: 1px solid #d1d5db;
       
-      &:hover {
-        background: #f3f4f6;
+      return filtered;
+    },
+    filteredFavorites() {
+      if (!this.favoritesSearchQuery.trim()) {
+        return this.user.favorites;
       }
+      
+      const query = this.favoritesSearchQuery.toLowerCase();
+      return this.user.favorites.filter(
+        course => course.title.toLowerCase().includes(query) || 
+                 course.author.toLowerCase().includes(query)
+      );
     }
-  }
-}
-
-@media (max-width: 900px) {
-  .user-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .tabs-header {
-    overflow-x: auto;
-    white-space: nowrap;
-    
-    .tab-item {
-      padding: 12px 15px;
+  },
+  methods: {
+    setActiveTab(tabId) {
+      this.activeTab = tabId;
+    },
+    getTotalCertificates() {
+      return this.user.certificates.length;
+    },
+    removeFromFavorites(courseId) {
+      this.user.favorites = this.user.favorites.filter(course => course.id !== courseId);
+      // В реальном приложении здесь был бы запрос к API
+    },
+    saveProfile() {
+      // Здесь была бы валидация и отправка формы на сервер
+      alert('Профиль успешно обновлен');
+      
+      // Обновляем данные пользователя
+      this.user.firstName = this.profileForm.firstName;
+      this.user.lastName = this.profileForm.lastName;
+      this.user.fullName = `${this.profileForm.firstName} ${this.profileForm.lastName}`;
+      this.user.email = this.profileForm.email;
+      this.user.phone = this.profileForm.phone;
+      
+      // Сброс полей пароля
+      this.profileForm.currentPassword = '';
+      this.profileForm.newPassword = '';
+      this.profileForm.confirmPassword = '';
     }
-  }
-}
-
-@media (max-width: 768px) {
-  .profile-header {
-    flex-direction: column;
-    text-align: center;
-    
-    .profile-avatar {
-      margin-right: 0;
-      margin-bottom: 20px;
-    }
-    
-    .profile-info {
-      margin-bottom: 20px;
-    }
-  }
-  
-  .history-item {
-    flex-direction: column;
-    
-    .history-image {
-      width: 100%;
-      height: 150px;
-    }
-    
-    .history-actions {
-      flex-direction: row;
-      justify-content: space-between;
-    }
-  }
-  
-  .form-actions {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .user-stats {
-    grid-template-columns: 1fr;
   }
 };
 </script>
 
-<style lang="scss" scoped>
-.profile-container {
+<style scoped>
+.profile-page {
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+}
+
+.container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
 .profile-header {
+  background-color: #f5f7fa;
+  padding: 30px 0;
+  margin-bottom: 30px;
+}
+
+.breadcrumbs {
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.breadcrumbs a {
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+.profile-content {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 30px;
+}
+
+/* Sidebar */
+.profile-sidebar {
+  position: sticky;
+  top: 20px;
+}
+
+.profile-card {
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 20px;
+  background-color: #fff;
+}
+
+.profile-avatar-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #4a90e2;
+  border: 3px solid #fff;
+  color: white;
   display: flex;
   align-items: center;
-  padding: 30px 0;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 30px;
-  
-  .profile-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-right: 30px;
-    border: 4px solid #3b82f6;
-    
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-  
-  .profile-info {
-    flex: 1;
-    
-    h1 {
-      font-size: 28px;
-      margin-bottom: 5px;
-      color: #1f2937;
-    }
-    
-    .profile-email {
-      font-size: 16px;
-      color: #6b7280;
-      margin-bottom: 8px;
-    }
-    
-    .profile-joined {
-      font-size: 14px;
-      color: #9ca3af;
-    }
-  }
-  
-  .edit-profile-btn {
-    padding: 10px 20px;
-    background: transparent;
-    color: #3b82f6;
-    border: 1px solid #3b82f6;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s;
-    
-    &:hover {
-      background: #3b82f6;
-      color: white;
-    }
-  }
+  justify-content: center;
+  cursor: pointer;
 }
 
-.user-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 40px;
-  
-  .stat-card {
-    padding: 20px;
-    background: #f9fafb;
-    border-radius: 8px;
-    text-align: center;
-    border: 1px solid #e5e7eb;
-    
-    .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2563eb;
-      margin-bottom: 8px;
-    }
-    
-    .stat-label {
-      font-size: 14px;
-      color: #4b5563;
-    }
-  }
+.profile-name {
+  text-align: center;
+  margin: 0 0 5px 0;
+  font-size: 22px;
 }
 
-.profile-tabs {
-  margin-bottom: 60px;
-  
-  .tabs-header {
-    display: flex;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 30px;
-    
-    .tab-item {
-      padding: 15px 25px;
-      font-size: 16px;
-      color: #6b7280;
-      cursor: pointer;
-      transition: all 0.3s;
-      
-      &:hover {
-        color: #2563eb;
-      }
-      
-      &.active {
-        color: #2563eb;
-        font-weight: 500;
-        border-bottom: 2px solid #2563eb;
-      }
-    }
-  }
-  
-  .tab-content {
-    h2 {
-      font-size: 22px;
-      color: #1f2937;
-      margin-bottom: 25px;
-    }
-  }
+.profile-email {
+  text-align: center;
+  margin: 0 0 20px 0;
+  color: #666;
+  font-size: 14px;
 }
 
-.courses-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 25px;
-  
-  .course-card {
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
-    cursor: pointer;
-    
-    &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-    
-    .course-image {
-      position: relative;
-      height: 160px;
-      overflow: hidden;
-      
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      
-      .course-platform {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(0, 0, 0, 0.6);
-        color: white;
-        padding: 4px 8px;
-        font-size: 12px;
-        border-radius: 4px;
-      }
-      
-      .favorite-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #f59e0b;
-        color: white;
-        padding: 4px 8px;
-        font-size: 14px;
-        border-radius: 4px;
-      }
-      
-      .course-progress {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 6px;
-        background: rgba(0, 0, 0, 0.3);
-        
-        .progress-bar {
-          height: 100%;
-          background: #10b981;
-        }
-      }
-    }
-    
-    .course-info {
-      padding: 15px;
-      
-      .course-title {
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 10px;
-        color: #1f2937;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        height: 44px;
-      }
-      
-      .course-meta {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        font-size: 14px;
-        
-        .course-rating {
-          display: flex;
-          align-items: center;
-          
-          .stars {
-            color: #f59e0b;
-            margin-right: 5px;
-          }
-          
-          .rating-value {
-            color: #4b5563;
-          }
-        }
-        
-        .course-students {
-          color: #6b7280;
-        }
-      }
-      
-      .course-category {
-        color: #4b5563;
-        font-size: 14px;
-        margin-bottom: 8px;
-      }
-      
-      .course-price {
-        font-weight: 600;
-        font-size: 16px;
-        color: #111827;
-        margin-bottom: 12px;
-        
-        &.free {
-          color: #059669;
-        }
-      }
-      
-      .course-progress-info {
-        display: flex;
-        justify-content: space-between;
-        font-size: 14px;
-        color: #6b7280;
-        margin-top: 12px;
-      }
-      
-      .remove-favorite-btn {
-        margin-top: 10px;
-        width: 100%;
-        padding: 8px;
-        background: transparent;
-        border: 1px solid #ef4444;
-        color: #ef4444;
-        border-radius: 4px;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s;
-        
-        &:hover {
-          background: #ef4444;
-          color: white;
-        }
-      }
-    }
-  }
+.profile-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e1e4e8;
 }
 
-.history-list {
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 24px;
+  font-weight: bold;
+  color: #4a90e2;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.profile-menu {
+  margin-bottom: 20px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #f0f7ff;
+}
+
+.menu-item.active {
+  background-color: #e6f0fd;
+  color: #4a90e2;
+}
+
+.menu-item i {
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid #4a90e2;
+  color: #4a90e2;
+}
+
+.btn-primary:hover {
+  background-color: #3a7bc8;
+}
+
+.btn-outline:hover {
+  background-color: #f0f7ff;
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+.btn i {
+  margin-right: 8px;
+}
+
+/* Main Content */
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tab-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.tab-filters {
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.filter-options {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-option {
+  padding: 6px 15px;
+  border-radius: 20px;
+  background-color: #f0f0f0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-option.active {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box i {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.search-box input {
+  padding: 8px 10px 8px 35px;
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+  width: 250px;
+}
+
+/* Courses List */
+.courses-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.course-card {
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.course-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+.course-image {
+  position: relative;
+  height: 160px;
+}
+
+.course-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.course-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.in-progress {
+  background-color: #ffc107;
+  color: #fff;
+}
+
+.completed {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.course-info {
+  padding: 15px;
+}
+
+.course-title {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.course-meta {
+  margin-bottom: 15px;
+}
+
+.author {
+  display: block;
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar {
+  flex-grow: 1;
+  height: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #4a90e2;
+}
+
+.progress-text {
+  font-size: 14px;
+  color: #666;
+}
+
+.course-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Favorites List */
+.favorites-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.favorite-card {
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.favorite-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+.favorite-image {
+  height: 160px;
+}
+
+.favorite-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite-info {
+  padding: 15px;
+}
+
+.favorite-title {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.favorite-meta {
+  display: flex;
   gap: 15px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.favorite-meta i {
+  color: #ffc107;
+  margin-right: 5px;
+}
+
+.favorite-price {
+  margin-bottom: 15px;
+}
+
+.current-price {
+  font-size: 20px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.original-price {
+  font-size: 14px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.favorite-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Certificates List */
+.certificates-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.certificate-card {
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.certificate-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.certificate-preview {
+  position: relative;
+}
+
+.certificate-preview img {
+  width: 100%;
+  display: block;
+}
+
+.certificate-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.certificate-card:hover .certificate-overlay {
+  opacity: 1;
+}
+
+.certificate-info {
+  padding: 15px;
+}
+
+.certificate-title {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+}
+
+.certificate-date {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Settings Form */
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section h3 {
+  font-size: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e1e4e8;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.form-check input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.empty-state i {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 15px;
+}
+
+.empty-state p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.empty-state-subtitle {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 20px;
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .profile-content {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-content {
+    grid-template-columns: 1fr;
+  }
   
-  .history-item {
-    display: flex;
-    background: #f9fafb;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
-    
-    .history-image {
-      width: 100px;
-      height: 100px;
-      
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-    
-    .history-info {
-      flex: 1;
-      padding: 15px;
-      
-      h3 {
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #1f2937;
-      }
-      
-      .history-meta {
-        display: flex;
-        gap: 15px;
-        font-size: 14px;
-        margin-bottom: 8px;
-        
-        .history-platform {
-          color: #4b5563;
-        }
-        
-        .history-category {
-          color: #6b7280;
-        }
-      }
-      
-      .history-date {
-        font-size: 14px;
-        color: #9ca3af;
-      }
-    }
-    
-          .history-actions {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 10px;
-      padding: 15px;
-      
-      .view-course-btn, 
-      .add-favorite-btn {
-        padding: 8px 15px;
-        border-radius: 4px;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.3s;
-        white-space: nowrap;
-      }
-      
-      .view-course-btn {
-        background: #3b82f6;
-        color: white;
-        border: none;
-        
-        &:hover {
-          background: #2563eb;
-        }
-      }
-      
-      .add-favorite-btn {
-        background: transparent;
-        border: 1px solid #f59e0b;
-        color: #f59e0b;
-        
-        &:hover {
-          background: #f59e0b;
-          color: white;
-        }
-      }
-    }
+  .profile-sidebar {
+    position: static;
+  }
+  
+  .tab-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .search-box input {
+    width: 100%;
+  }
+  
+  .courses-list,
+  .favorites-list,
+  .certificates-list {
+    grid-template-columns: 1fr;
+  }
+}
+</style>style scoped>

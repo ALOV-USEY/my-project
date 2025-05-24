@@ -1,4 +1,4 @@
-<template>
+ <template>
   <div class="home-container">
     <!-- Верхний баннер -->
     <section class="hero-banner">
@@ -133,6 +133,173 @@
 </template>
 
 <script>
+
+// resources/js/store/auth.js
+import { defineStore } from 'pinia';
+
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    user: null,
+    token: null,
+    isAuthenticated: false,
+    isGuest: false
+  }),
+
+  getters: {
+    isLoggedIn: (state) => state.isAuthenticated && !state.isGuest,
+    hasAccess: (state) => state.isAuthenticated || state.isGuest,
+    currentUser: (state) => state.user,
+    userDisplayName: (state) => {
+      if (state.isGuest) return 'Гость';
+      return state.user?.name || 'Пользователь';
+    }
+  },
+
+  actions: {
+    async login(credentials) {
+      try {
+        // Здесь должна быть логика отправки запроса на сервер
+        // Пока используем заглушку
+        const response = await this.mockLogin(credentials);
+        
+        this.user = response.user;
+        this.token = response.token;
+        this.isAuthenticated = true;
+        this.isGuest = false;
+        
+        // Сохраняем токен в localStorage (если поддерживается)
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('auth_token', response.token);
+          localStorage.setItem('user_data', JSON.stringify(response.user));
+        }
+        
+        return response;
+      } catch (error) {
+        throw new Error(error.message || 'Ошибка авторизации');
+      }
+    },
+
+    async register(userData) {
+      try {
+        // Здесь должна быть логика отправки запроса на сервер
+        // Пока используем заглушку
+        const response = await this.mockRegister(userData);
+        
+        this.user = response.user;
+        this.token = response.token;
+        this.isAuthenticated = true;
+        this.isGuest = false;
+        
+        // Сохраняем токен в localStorage (если поддерживается)
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('auth_token', response.token);
+          localStorage.setItem('user_data', JSON.stringify(response.user));
+        }
+        
+        return response;
+      } catch (error) {
+        throw new Error(error.message || 'Ошибка регистрации');
+      }
+    },
+
+    setGuestMode() {
+      this.user = {
+        id: 'guest',
+        name: 'Гость',
+        email: null
+      };
+      this.token = null;
+      this.isAuthenticated = true;
+      this.isGuest = true;
+      
+      // Сохраняем гостевой режим
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('guest_mode', 'true');
+      }
+    },
+
+    logout() {
+      this.user = null;
+      this.token = null;
+      this.isAuthenticated = false;
+      this.isGuest = false;
+      
+      // Очищаем localStorage
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+        localStorage.removeItem('guest_mode');
+      }
+    },
+
+    async checkAuth() {
+      try {
+        if (typeof localStorage === 'undefined') return;
+        
+        // Проверяем гостевой режим
+        const guestMode = localStorage.getItem('guest_mode');
+        if (guestMode === 'true') {
+          this.setGuestMode();
+          return;
+        }
+        
+        // Проверяем обычную авторизацию
+        const token = localStorage.getItem('auth_token');
+        const userData = localStorage.getItem('user_data');
+        
+        if (token && userData) {
+          this.token = token;
+          this.user = JSON.parse(userData);
+          this.isAuthenticated = true;
+          this.isGuest = false;
+        }
+      } catch (error) {
+        console.error('Ошибка при проверке авторизации:', error);
+        this.logout();
+      }
+    },
+
+    // Заглушки для API запросов
+    async mockLogin(credentials) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (credentials.email === 'test@example.com' && credentials.password === 'password') {
+            resolve({
+              user: {
+                id: 1,
+                name: 'Тестовый пользователь',
+                email: credentials.email
+              },
+              token: 'mock-jwt-token'
+            });
+          } else {
+            reject(new Error('Неверные учетные данные'));
+          }
+        }, 1000);
+      });
+    },
+
+    async mockRegister(userData) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (userData.email && userData.password && userData.name) {
+            resolve({
+              user: {
+                id: Date.now(),
+                name: userData.name,
+                email: userData.email
+              },
+              token: 'mock-jwt-token-' + Date.now()
+            });
+          } else {
+            reject(new Error('Некорректные данные'));
+          }
+        }, 1000);
+      });
+    }
+  }
+});
+
 import { ref, onMounted } from 'vue';
 import { useCoursesStore } from '@/store/courses'; // Оставляем импорт для совместимости
 
@@ -315,6 +482,8 @@ export default {
     };
   }
 };
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -605,3 +774,4 @@ export default {
   }
 }
 </style>
+

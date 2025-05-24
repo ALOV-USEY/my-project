@@ -113,7 +113,23 @@
         {{ errorMessage }}
       </div>
     </div>
+  <div>
+        <!-- Вход как гость -->
+      <div class="guest-section">
+        <div class="divider">
+          <span>или</span>
+        </div>
+        <button @click="handleGuestLogin" class="guest-btn" :disabled="isLoading">
+          <i class="fa fa-user-friends"></i>
+          Войти как гость
+        </button>
+        <p class="guest-note">
+          Получите доступ к каталогу курсов без регистрации
+        </p>
+      </div>
+    </div>
   </div>
+
 </template>
 
 <script>
