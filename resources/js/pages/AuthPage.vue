@@ -23,27 +23,20 @@
       
       <!-- Кнопка входа как гость -->
       <div class="guest-section">
-        <div class="divider">
-          <span>или</span>
-        </div>
         <button @click="handleGuestLogin" class="guest-btn" :disabled="isLoading">
           Войти как гость
         </button>
-        <p class="guest-note">
-          Получите доступ к каталогу курсов без регистрации
-        </p>
       </div>
       
       <!-- Форма входа -->
       <form v-if="activeTab === 'login'" @submit.prevent="handleLogin" class="auth-form">
         <div class="form-group">
-          <label for="email">Email</label>
           <input 
             type="email" 
             id="email" 
             v-model="loginForm.email" 
             required 
-            placeholder="Введите email" 
+            placeholder="yy@yy" 
           />
         </div>
         
@@ -54,7 +47,7 @@
             id="password" 
             v-model="loginForm.password" 
             required 
-            placeholder="Введите пароль" 
+            placeholder="••"
           />
         </div>
         
@@ -74,7 +67,6 @@
       <!-- Форма регистрации -->
       <form v-else @submit.prevent="handleRegister" class="auth-form">
         <div class="form-group">
-          <label for="register-name">Имя</label>
           <input 
             type="text" 
             id="register-name" 
@@ -85,7 +77,6 @@
         </div>
         
         <div class="form-group">
-          <label for="register-email">Email</label>
           <input 
             type="email" 
             id="register-email" 
@@ -96,7 +87,6 @@
         </div>
         
         <div class="form-group">
-          <label for="register-password">Пароль</label>
           <input 
             type="password" 
             id="register-password" 
@@ -107,7 +97,6 @@
         </div>
         
         <div class="form-group">
-          <label for="register-password-confirm">Подтверждение пароля</label>
           <input 
             type="password" 
             id="register-password-confirm" 
@@ -126,23 +115,7 @@
         {{ errorMessage }}
       </div>
     </div>
-  <div>
-        <!-- Вход как гость -->
-      <div class="guest-section">
-        <div class="divider">
-          <span>или</span>
-        </div>
-        <button @click="handleGuestLogin" class="guest-btn" :disabled="isLoading">
-          <i class="fa fa-user-friends"></i>
-          Войти как гость
-        </button>
-        <p class="guest-note">
-          Получите доступ к каталогу курсов без регистрации
-        </p>
-      </div>
-    </div>
   </div>
-
 </template>
 
 <script>
@@ -218,6 +191,29 @@ export default {
       }
     };
     
+    const handleGuestLogin = async () => {
+      try {
+        isLoading.value = true;
+        errorMessage.value = '';
+        
+        // Проверяем, есть ли метод loginAsGuest в store
+        if (typeof authStore.loginAsGuest === 'function') {
+          await authStore.loginAsGuest();
+        } else {
+          // Если метода нет, устанавливаем гостевой режим напрямую
+          authStore.isGuest = true;
+          authStore.user = null;
+        }
+        
+        // Перенаправляем на главную страницу
+        router.push('/');
+      } catch (error) {
+        errorMessage.value = error.message || 'Ошибка при входе как гость.';
+      } finally {
+        isLoading.value = false;
+      }
+    };
+    
     return {
       activeTab,
       loginForm,
@@ -225,7 +221,8 @@ export default {
       isLoading,
       errorMessage,
       handleLogin,
-      handleRegister
+      handleRegister,
+      handleGuestLogin
     };
   }
 };
@@ -280,6 +277,7 @@ export default {
     font-weight: 500;
     cursor: pointer;
     color: #555;
+    transition: color 0.2s;
     
     &.active {
       color: #2563eb;
@@ -288,6 +286,32 @@ export default {
     
     &:hover:not(.active) {
       color: #3b82f6;
+    }
+  }
+}
+
+.guest-section {
+  margin-bottom: 25px;
+  
+  .guest-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    
+    &:hover:not(:disabled) {
+      background-color: #1d4ed8;
+    }
+    
+    &:disabled {
+      background-color: #93c5fd;
+      cursor: not-allowed;
     }
   }
 }
@@ -310,10 +334,15 @@ export default {
       border-radius: 5px;
       font-size: 15px;
       transition: border 0.2s;
+      box-sizing: border-box;
       
       &:focus {
         border-color: #3b82f6;
         outline: none;
+      }
+      
+      &::placeholder {
+        color: #999;
       }
     }
   }
@@ -332,6 +361,7 @@ export default {
       
       input {
         margin-right: 8px;
+        width: auto;
       }
     }
     
@@ -358,7 +388,7 @@ export default {
   cursor: pointer;
   transition: background-color 0.2s;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: #1d4ed8;
   }
   
