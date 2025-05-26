@@ -4,47 +4,48 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     isAuthenticated: false,
+    isGuest: false
   }),
-  
+
+  getters: {
+    isLoggedIn: (state) => state.isAuthenticated && !state.isGuest,
+    hasAccess: (state) => state.isAuthenticated || state.isGuest,
+    userDisplayName: (state) => state.user?.name || 'Гость'
+  },
+
   actions: {
     async login(credentials) {
-      // Для тестирования просто имитируем успешный вход
-      console.log('Вход с данными:', credentials);
-      
-      // В реальном проекте здесь был бы запрос к API
-      // await api.post('/login', credentials);
-      
-      this.user = { 
-        id: 1, 
-        name: 'Тестовый пользователь', 
-        email: credentials.email 
+      // Заглушка для тестирования
+      this.user = {
+        id: 1,
+        name: 'Test User',
+        email: credentials.email
       };
       this.isAuthenticated = true;
-      
-      // Возвращаем промис для возможности обработки во внешнем коде
-      return Promise.resolve(this.user);
+      this.isGuest = false;
+      return true;
     },
-    
-    async register(userData) {
-      // Для тестирования просто имитируем успешную регистрацию
-      console.log('Регистрация с данными:', userData);
-      
-      // В реальном проекте здесь был бы запрос к API
-      // await api.post('/register', userData);
-      
-      this.user = { 
-        id: 1, 
-        name: userData.name, 
-        email: userData.email 
+
+    async loginAsGuest() {
+      this.user = {
+        id: 0,
+        name: 'Гость',
+        email: 'guest@example.com'
       };
       this.isAuthenticated = true;
-      
-      return Promise.resolve(this.user);
+      this.isGuest = true;
+      return true;
     },
-    
-    logout() {
+
+    async logout() {
       this.user = null;
       this.isAuthenticated = false;
+      this.isGuest = false;
+    },
+
+    async checkAuth() {
+      // Заглушка для проверки авторизации
+      return this.isAuthenticated;
     }
   }
 });

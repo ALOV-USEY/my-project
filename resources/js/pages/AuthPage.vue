@@ -234,49 +234,49 @@ export default {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f7fa;
-  padding: 20px;
+  background-color: #f3f4f6;
+  padding: 1.25rem;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 450px;
-  background-color: #fff;
-  border-radius: 10px;
+  max-width: 28rem;
+  background-color: white;
+  border-radius: 0.625rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  padding: 2rem;
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 2rem;
   
   h1 {
-    font-size: 28px;
-    color: #333;
-    margin-bottom: 10px;
+    font-size: 1.75rem;
+    color: #1f2937;
+    margin-bottom: 0.625rem;
   }
   
   p {
-    color: #666;
-    font-size: 16px;
+    color: #6b7280;
+    font-size: 1rem;
   }
 }
 
 .auth-tabs {
   display: flex;
-  margin-bottom: 25px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
   
   .tab-btn {
     flex: 1;
     background: none;
     border: none;
-    padding: 12px 0;
-    font-size: 16px;
+    padding: 0.75rem 0;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    color: #555;
+    color: #6b7280;
     transition: color 0.2s;
     
     &.active {
@@ -285,22 +285,22 @@ export default {
     }
     
     &:hover:not(.active) {
-      color: #3b82f6;
+      color: #4b5563;
     }
   }
 }
 
 .guest-section {
-  margin-bottom: 25px;
+  margin-bottom: 1.5rem;
   
   .guest-btn {
     width: 100%;
-    padding: 12px;
+    padding: 0.75rem;
     background-color: #2563eb;
     color: white;
     border: none;
-    border-radius: 5px;
-    font-size: 16px;
+    border-radius: 0.375rem;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -318,31 +318,31 @@ export default {
 
 .auth-form {
   .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
     
     label {
       display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: #444;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: #4b5563;
     }
     
     input {
       width: 100%;
-      padding: 12px 15px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 15px;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      font-size: 0.938rem;
       transition: border 0.2s;
       box-sizing: border-box;
       
       &:focus {
-        border-color: #3b82f6;
+        border-color: #2563eb;
         outline: none;
       }
       
       &::placeholder {
-        color: #999;
+        color: #9ca3af;
       }
     }
   }
@@ -351,8 +351,8 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    font-size: 14px;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
     
     .remember-me {
       display: flex;
@@ -360,7 +360,7 @@ export default {
       cursor: pointer;
       
       input {
-        margin-right: 8px;
+        margin-right: 0.5rem;
         width: auto;
       }
     }
@@ -378,12 +378,12 @@ export default {
 
 .auth-btn {
   width: 100%;
-  padding: 12px;
+  padding: 0.75rem;
   background-color: #2563eb;
   color: white;
   border: none;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 0.375rem;
+  font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -399,12 +399,24 @@ export default {
 }
 
 .error-message {
-  margin-top: 20px;
-  padding: 12px;
+  margin-top: 1.25rem;
+  padding: 0.75rem;
   background-color: #fee2e2;
   color: #b91c1c;
-  border-radius: 5px;
-  font-size: 14px;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
   text-align: center;
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 1.5rem;
+  }
+  
+  .auth-header {
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
 }
 </style>

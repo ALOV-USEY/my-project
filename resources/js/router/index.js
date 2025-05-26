@@ -64,6 +64,7 @@
 // resources/js/router/index.js
 // resources/js/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
+import MainLayout from '../layouts/MainLayout.vue';
 import AuthPage from '../pages/AuthPage.vue';
 import HomePage from '../pages/HomePage.vue';
 import CourseDetailPage from '../pages/CourseDetail.vue';
@@ -75,33 +76,34 @@ import { useAuthStore } from '../store/auth';
 const routes = [
     {
         path: '/',
-        component: HomePage,
-        meta: { requiresAuth: true }
+        component: MainLayout,
+        children: [
+            {
+                path: '',
+                component: HomePage,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'courses',
+                component: CourseDetailPage,
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'profile',
+                component: ProfilePage,
+                meta: { requiresAuth: true, guestRestricted: true }
+            },
+            {
+                path: 'search',
+                component: SearchPage,
+                meta: { requiresAuth: true }
+            }
+        ]
     },
     {
         path: '/auth',
         component: AuthPage,
         meta: { guest: true }
-    },
-    {
-         path: '/courses',
-         component: CourseDetailPage,
-         meta: { requiresAuth: true }
-    },
-    {
-         path: '/profile',
-         component: ProfilePage,
-         meta: { requiresAuth: true, guestRestricted: true } // Только для авторизованных пользователей
-    },
-    // {
-    //     path: '/favorites',
-    //     component: FavoritesPage,
-    //     meta: { requiresAuth: true, guestRestricted: true } // Только для авторизованных пользователей
-    // },
-    {
-        path: '/search',
-        component: SearchPage,
-        meta: { requiresAuth: true }
     }
 ];
 
